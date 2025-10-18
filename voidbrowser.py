@@ -52,9 +52,6 @@ class VoidBrowser(QMainWindow):
         )
         self.label.setGeometry(0, 0, self.width(), self.height())
 
-        # --- Dark mode injector ---
-        self.page.loadFinished.connect(self.inject_dark_mode)
-
         # --- Address bar overlay ---
         self.address_bar = QLineEdit(self)
         self.address_bar.setPlaceholderText("Enter URL...")
@@ -91,6 +88,7 @@ class VoidBrowser(QMainWindow):
         QShortcut(QKeySequence("Escape"), self, activated=self.hide_address_bar)
         QShortcut(QKeySequence("Ctrl+Q"), self, activated=self.close)
         QShortcut(QKeySequence("Ctrl+H"), self, activated=self.go_home)
+        QShortcut(QKeySequence("Ctrl+Shift+S"), self, activated=self.inject_dark_mode)
 
     # --- Helper to center window ---
     def center_on_screen(self):
@@ -164,11 +162,7 @@ class VoidBrowser(QMainWindow):
         self.label.hide()
         self.setCentralWidget(self.view)
 
-    # --- Dark mode injector ---
     def inject_dark_mode(self):
-        url = self.view.url().toString()
-        if url.startswith("file://") and url.lower().endswith("background.png"):
-            return  # skip dark mode on default PNG
         dark_css = """
         html, body {
             background-color: #1D1D20 !important;
@@ -178,12 +172,21 @@ class VoidBrowser(QMainWindow):
         * { scrollbar-color: #444 #111 !important; caret-color: #ccc !important; }
         a { color: #8ab4f8 !important; }
         """
+
         js = f"""
-        var style = document.createElement('style');
-        style.textContent = `{dark_css}`;
-        document.documentElement.appendChild(style);
-        window.matchMedia = () => {{ return {{ matches: true }}; }};
+        (function() {{
+            var existing = document.getElementById('void-dark-style');
+            if (existing) {{
+                existing.remove();  // remove dark mode if already active
+                return;
+            }}
+            var style = document.createElement('style');
+            style.id = 'void-dark-style';
+            style.textContent = `{dark_css}`;
+            document.documentElement.appendChild(style);
+        }})();
         """
+
         self.page.runJavaScript(js)
 
 
