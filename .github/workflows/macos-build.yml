@@ -35,3 +35,9 @@ jobs:
         with:
           name: VoidBrowser-macOS
           path: dist/
+
+      - name: Create DMG
+        run: |
+          brew install create-dmg
+          create-dmg 'dist/VoidBrowser.app' dist/
+
