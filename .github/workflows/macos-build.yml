@@ -1,0 +1,37 @@
+name: Build macOS App (VoidBrowser)
+
+on:
+  workflow_dispatch:  # allows manual runs
+  push:
+    tags:
+      - 'v*'  # automatically build on version tags like v1.0.0
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          # If you have a requirements.txt file, uncomment this instead:
+          # pip install -r requirements.txt
+
+      - name: Build VoidBrowser app
+        run: |
+          pyinstaller --onefile --windowed --name "VoidBrowser" voidbrowser.py
+          ls dist/
+
+      - name: Upload built app
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoidBrowser-macOS
+          path: dist/
