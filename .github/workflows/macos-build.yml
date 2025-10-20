@@ -39,5 +39,5 @@ jobs:
       - name: Create DMG
         run: |
           brew install create-dmg
-          create-dmg 'dist/VoidBrowser.app' dist/
+          create-dmg 'dist/VoidBrowser.dmg' 'dist/VoidBrowser.app'
 
